@@ -36,11 +36,6 @@ export function useStorage() {
     }
   }, [logs])
 
-  const getDay = useCallback(
-    (date) => logs[date] || emptyDay(),
-    [logs]
-  )
-
   const getToday = useCallback(
     () => logs[todayStr()] || emptyDay(),
     [logs]
@@ -67,5 +62,5 @@ export function useStorage() {
     })
   }, [])
 
-  return { logs, getDay, getToday, toggleSession, setTension }
+  return { logs, getToday, toggleSession, setTension }
 }

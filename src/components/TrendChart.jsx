@@ -32,7 +32,7 @@ export default function TrendChart({ logs }) {
                 style={{ height: `${h}%` }}
                 title={has ? `Spenning ${d.tension}/5` : 'Ingen logg'}
               />
-              <div className="chart-day">{i % 2 === 0 ? d.dow : ''}</div>
+              <div className="chart-day">{d.dow === 'M' ? 'M' : ''}</div>
             </div>
           )
         })}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 // 4-7-8: inhale 4s (grow), hold 7s, exhale 8s (shrink).
 const PHASES = [
@@ -11,27 +11,25 @@ export default function BreathingPacer() {
   const [running, setRunning] = useState(false)
   const [phaseIdx, setPhaseIdx] = useState(0)
   const [remaining, setRemaining] = useState(PHASES[0].secs)
-  const tickRef = useRef(null)
 
   const phase = PHASES[phaseIdx]
 
+  // Tick down once per second.
   useEffect(() => {
     if (!running) return
-    // Countdown once per second; advance phase when it hits zero.
-    tickRef.current = setInterval(() => {
-      setRemaining((r) => {
-        if (r > 1) return r - 1
-        setPhaseIdx((p) => (p + 1) % PHASES.length)
-        return null // replaced below
-      })
+    const id = setInterval(() => {
+      setRemaining((r) => (r > 0 ? r - 1 : r))
     }, 1000)
-    return () => clearInterval(tickRef.current)
+    return () => clearInterval(id)
   }, [running])
 
-  // Reset the countdown whenever the phase changes.
+  // Advance to the next phase when the countdown reaches zero.
   useEffect(() => {
-    setRemaining(PHASES[phaseIdx].secs)
-  }, [phaseIdx])
+    if (!running || remaining !== 0) return
+    const next = (phaseIdx + 1) % PHASES.length
+    setPhaseIdx(next)
+    setRemaining(PHASES[next].secs)
+  }, [remaining, running, phaseIdx])
 
   function toggle() {
     if (running) {
