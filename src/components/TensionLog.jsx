@@ -1,8 +1,14 @@
 export default function TensionLog({ value, onSet }) {
   return (
     <div className="tension">
-      <div className="label">Hvor stram kjennes kroppen akkurat nå?</div>
-      <div className="scale">
+      <div id="tension-label" className="label">
+        Hvor stram kjennes kroppen akkurat nå?
+      </div>
+      <div
+        className="scale"
+        role="group"
+        aria-labelledby="tension-label"
+      >
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
@@ -15,7 +21,7 @@ export default function TensionLog({ value, onSet }) {
           </button>
         ))}
       </div>
-      <div className="ends">
+      <div className="ends" aria-hidden="true">
         <span>Rolig</span>
         <span>Svært stram</span>
       </div>

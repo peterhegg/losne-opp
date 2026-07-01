@@ -8,7 +8,7 @@ const TABS = [
 
 export default function BottomNav({ active, onNav }) {
   return (
-    <nav className="nav">
+    <nav className="nav" aria-label="Hoved-navigasjon">
       {TABS.map(({ id, label, Icon }) => {
         const isActive = active === id
         return (

@@ -7,6 +7,10 @@
   --ink-soft: #566057;
   --line: #B7C2B4;
 
+  /* Text-specific tokens that meet 4.5:1 on --paper in light mode */
+  --moss-text: #3D5E44;
+  --ember-text: #8B3D20;
+
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
 
@@ -25,6 +29,10 @@
     --ink-soft: #A2AFA4;
     --line: #37453A;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+
+    /* Dark mode: lighter ember to meet 4.5:1 on dark --paper */
+    --moss-text: #8AA890;
+    --ember-text: #E58060;
   }
 }
 
@@ -53,6 +61,30 @@ button {
   border: none;
   background: none;
   color: inherit;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--moss);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.session .check:focus-visible,
+.tension .dot:focus-visible,
+.nav button:focus-visible {
+  border-radius: 50%;
+}
+
+.nav button:focus-visible {
+  border-radius: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none; }
+  .session,
+  .session .check,
+  .session .check svg,
+  .pacer-circle { transition: none !important; }
 }
 
 #root {
@@ -130,7 +162,7 @@ button {
 }
 
 .rule strong {
-  color: var(--ember);
+  color: var(--ember-text);
   font-weight: 600;
 }
 
@@ -143,29 +175,33 @@ button {
 
 .session {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 6px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 15px 16px;
-  transition: opacity 0.25s ease, background 0.25s ease;
+  padding: 10px 16px;
+  transition: background 0.25s ease;
 }
 
 .session.done {
-  opacity: 0.6;
   background: color-mix(in srgb, var(--moss) 12%, var(--paper));
 }
 
+.session.done .title,
+.session.done .desc,
+.session.done .time {
+  opacity: 0.55;
+}
+
 .session .check {
-  flex: 0 0 26px;
-  width: 26px;
-  height: 26px;
+  flex: 0 0 44px;  /* WCAG 2.5.5: minimum 44×44px touch target */
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 2px solid var(--line);
   display: grid;
   place-items: center;
-  margin-top: 2px;
   transition: all 0.2s ease;
   background: transparent;
 }
@@ -198,7 +234,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--moss);
+  color: var(--moss-text);  /* darkened for 4.5:1 contrast on --paper */
 }
 
 .session .title {
@@ -222,7 +258,7 @@ button {
   margin-top: 9px;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--ember);
+  color: var(--ember-text);  /* darkened for 4.5:1 contrast */
   text-decoration: none;
 }
 

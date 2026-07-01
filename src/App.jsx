@@ -48,7 +48,7 @@ export default function App() {
             <h1>Løsne opp</h1>
             <div className="sub">Ett skritt om gangen. Kroppen bestemmer tempoet.</div>
           </header>
-          <div className="screen">
+          <main className="screen">
             <Streak logs={logs} />
 
             {notifState === 'default' && <NotifPrompt onEnable={enableNotif} />}
@@ -63,7 +63,7 @@ export default function App() {
             <h2 className="section-title">Dagens økter</h2>
             <p className="section-note">Kryss av det du har gjort. Ingen tvang om å ta alle.</p>
             <DayPlan done={today.done} onToggle={toggleSession} />
-          </div>
+          </main>
         </>
       )}
 
@@ -73,9 +73,9 @@ export default function App() {
             <h1>4-7-8</h1>
             <div className="sub">Rolig pust som demper nervesystemet.</div>
           </header>
-          <div className="screen">
+          <main className="screen">
             <BreathingPacer />
-          </div>
+          </main>
         </>
       )}
 
@@ -85,12 +85,12 @@ export default function App() {
             <h1>Trend</h1>
             <div className="sub">Spenningsnivå de siste to ukene.</div>
           </header>
-          <div className="screen">
+          <main className="screen">
             <TrendChart logs={logs} />
             <p className="section-note" style={{ marginTop: 16 }}>
               Lavere søyler betyr roligere kropp. Hull er dager uten logg — helt greit.
             </p>
-          </div>
+          </main>
         </>
       )}
 
