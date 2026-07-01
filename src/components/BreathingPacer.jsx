@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // 4-7-8: inhale 4s (grow), hold 7s, exhale 8s (shrink).
 const PHASES = [
@@ -7,12 +7,32 @@ const PHASES = [
   { key: 'ut', label: 'Pust ut', secs: 8, scale: 0.55 },
 ]
 
+function loadPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key)
+    return v === null ? fallback : v === '1'
+  } catch {
+    return fallback
+  }
+}
+
 export default function BreathingPacer() {
   const [running, setRunning] = useState(false)
   const [phaseIdx, setPhaseIdx] = useState(0)
   const [remaining, setRemaining] = useState(PHASES[0].secs)
+  const [sound, setSound] = useState(() => loadPref('pacer-sound', true))
+  const [voice, setVoice] = useState(() => loadPref('pacer-voice', false))
+
+  const audioRef = useRef(null)
 
   const phase = PHASES[phaseIdx]
+
+  useEffect(() => {
+    try { localStorage.setItem('pacer-sound', sound ? '1' : '0') } catch {}
+  }, [sound])
+  useEffect(() => {
+    try { localStorage.setItem('pacer-voice', voice ? '1' : '0') } catch {}
+  }, [voice])
 
   // Tick down once per second.
   useEffect(() => {
@@ -31,12 +51,72 @@ export default function BreathingPacer() {
     setRemaining(PHASES[next].secs)
   }, [remaining, running, phaseIdx])
 
+  // Play a calm tone + spoken cue at the start of each phase.
+  useEffect(() => {
+    if (!running) return
+    if (sound) playTone(phase.key)
+    if (voice) speak(phase.label)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phaseIdx, running])
+
+  function ensureAudio() {
+    if (!audioRef.current) {
+      const Ctx = window.AudioContext || window.webkitAudioContext
+      if (Ctx) audioRef.current = new Ctx()
+    }
+    return audioRef.current
+  }
+
+  // Soft sine sweep: rising for inhale, falling for exhale, steady low for hold.
+  function playTone(key) {
+    const ctx = ensureAudio()
+    if (!ctx) return
+    if (ctx.state === 'suspended') ctx.resume()
+    const now = ctx.currentTime
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+
+    if (key === 'inn') {
+      osc.frequency.setValueAtTime(294, now)
+      osc.frequency.linearRampToValueAtTime(392, now + 0.7)
+    } else if (key === 'ut') {
+      osc.frequency.setValueAtTime(392, now)
+      osc.frequency.linearRampToValueAtTime(262, now + 0.9)
+    } else {
+      osc.frequency.setValueAtTime(330, now)
+    }
+
+    const dur = key === 'ut' ? 1.0 : 0.75
+    gain.gain.setValueAtTime(0.0001, now)
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.12)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur)
+
+    osc.connect(gain).connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + dur + 0.05)
+  }
+
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'nb-NO'
+    u.rate = 0.9
+    u.pitch = 1
+    window.speechSynthesis.speak(u)
+  }
+
   function toggle() {
     if (running) {
       setRunning(false)
       setPhaseIdx(0)
       setRemaining(PHASES[0].secs)
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel()
     } else {
+      // Unlock audio inside the user gesture so mobile browsers allow playback.
+      const ctx = ensureAudio()
+      if (ctx && ctx.state === 'suspended') ctx.resume()
       setPhaseIdx(0)
       setRemaining(PHASES[0].secs)
       setRunning(true)
@@ -68,6 +148,23 @@ export default function BreathingPacer() {
       <button className="pacer-btn" onClick={toggle}>
         {running ? 'Stopp' : 'Start'}
       </button>
+
+      <div className="pacer-toggles" role="group" aria-label="Lyd og stemme">
+        <button
+          className={`pacer-toggle${sound ? ' on' : ''}`}
+          onClick={() => setSound((s) => !s)}
+          aria-pressed={sound}
+        >
+          {sound ? 'Lyd på' : 'Lyd av'}
+        </button>
+        <button
+          className={`pacer-toggle${voice ? ' on' : ''}`}
+          onClick={() => setVoice((v) => !v)}
+          aria-pressed={voice}
+        >
+          {voice ? 'Stemme på' : 'Stemme av'}
+        </button>
+      </div>
 
       <p className="pacer-hint">
         Følg sirkelen: inn i fire, hold i sju, ut i åtte. Kjennes det ubehagelig,
