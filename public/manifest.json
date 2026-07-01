@@ -1,0 +1,24 @@
+{
+  "name": "Løsne opp",
+  "short_name": "Løsne opp",
+  "description": "Daglig program for å løsne spenning i diafragma og nervesystem",
+  "start_url": "/losne-opp/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#5C7A63",
+  "background_color": "#DCE3DA",
+  "icons": [
+    {
+      "src": "/losne-opp/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/losne-opp/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
