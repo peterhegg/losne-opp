@@ -24,8 +24,32 @@ export default function BreathingPacer() {
   const [voice, setVoice] = useState(() => loadPref('pacer-voice', false))
 
   const audioRef = useRef(null)
+  const wakeLockRef = useRef(null)
 
   const phase = PHASES[phaseIdx]
+
+  async function acquireWakeLock() {
+    if (!('wakeLock' in navigator)) return
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request('screen')
+    } catch {}
+  }
+
+  function releaseWakeLock() {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {})
+      wakeLockRef.current = null
+    }
+  }
+
+  // Re-acquire wake lock if page becomes visible again (OS releases it on hide).
+  useEffect(() => {
+    function onVisibility() {
+      if (running && document.visibilityState === 'visible') acquireWakeLock()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [running])
 
   useEffect(() => {
     try { localStorage.setItem('pacer-sound', sound ? '1' : '0') } catch {}
@@ -113,6 +137,7 @@ export default function BreathingPacer() {
       setPhaseIdx(0)
       setRemaining(PHASES[0].secs)
       if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+      releaseWakeLock()
     } else {
       // Unlock audio inside the user gesture so mobile browsers allow playback.
       const ctx = ensureAudio()
@@ -120,6 +145,7 @@ export default function BreathingPacer() {
       setPhaseIdx(0)
       setRemaining(PHASES[0].secs)
       setRunning(true)
+      acquireWakeLock()
     }
   }
 
